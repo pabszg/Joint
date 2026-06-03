@@ -27,12 +27,14 @@ global.SpreadsheetApp = {
   openById: jest.fn().mockReturnValue(mockSpreadsheet)
 };
 
-const mockProperties = {};
 global.PropertiesService = {
-  getUserProperties: jest.fn().mockReturnValue({
-    getProperty: jest.fn((key) => mockProperties[key] || null),
-    setProperty: jest.fn((key, value) => { mockProperties[key] = value; }),
-    deleteProperty: jest.fn((key) => { delete mockProperties[key]; })
+  getUserProperties: jest.fn(() => {
+    const store = {};
+    return {
+      getProperty: jest.fn((key) => store[key] || null),
+      setProperty: jest.fn((key, value) => { store[key] = value; }),
+      deleteProperty: jest.fn((key) => { delete store[key]; })
+    };
   })
 };
 
@@ -43,16 +45,22 @@ global.UrlFetchApp = {
   })
 };
 
+const mockMonthFolder = {
+  createFile: jest.fn().mockReturnValue({
+    getId: jest.fn().mockReturnValue('file-id'),
+    setSharing: jest.fn().mockReturnThis()
+  }),
+  getFoldersByName: jest.fn().mockReturnValue({ hasNext: jest.fn().mockReturnValue(false) })
+};
+
+const mockReceiptsFolder = {
+  createFolder: jest.fn().mockReturnValue(mockMonthFolder),
+  getFoldersByName: jest.fn().mockReturnValue({ hasNext: jest.fn().mockReturnValue(false) })
+};
+
 global.DriveApp = {
   getFolderById: jest.fn().mockReturnValue({
-    createFolder: jest.fn().mockReturnValue({
-      getId: jest.fn().mockReturnValue('folder-id'),
-      createFile: jest.fn().mockReturnValue({
-        getId: jest.fn().mockReturnValue('file-id'),
-        setSharing: jest.fn().mockReturnThis()
-      }),
-      getFoldersByName: jest.fn().mockReturnValue({ hasNext: jest.fn().mockReturnValue(false) })
-    }),
+    createFolder: jest.fn().mockReturnValue(mockReceiptsFolder),
     getFoldersByName: jest.fn().mockReturnValue({ hasNext: jest.fn().mockReturnValue(false) })
   }),
   Access: { ANYONE_WITH_LINK: 'ANYONE_WITH_LINK' },
@@ -92,3 +100,7 @@ global.ScriptApp = {
   deleteTrigger: jest.fn(),
   WeekDay: { SUNDAY: 1, MONDAY: 2 }
 };
+
+beforeEach(() => {
+  jest.clearAllMocks();
+});
