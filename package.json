@@ -1,0 +1,14 @@
+{
+  "name": "expense-tracker",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "push": "clasp push",
+    "pull": "clasp pull"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0",
+    "@google/clasp": "^2.4.2"
+  }
+}
