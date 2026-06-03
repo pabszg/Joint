@@ -8,7 +8,7 @@ function checkBudget(category, spend, budgets) {
   if (!budget) return null;
 
   var percentage = (spend / budget.limit) * 100;
-  if (spend > budget.limit) {
+  if (spend >= budget.limit) {
     return { type: 'over_budget', category: category, spend: spend, limit: budget.limit, percentage: percentage };
   }
   if (percentage >= budget.alertThreshold) {
@@ -18,14 +18,14 @@ function checkBudget(category, spend, budgets) {
 }
 
 function formatBudgetSave(category, spend, limit, percentage) {
-  return category + ' this month: €' + spend.toFixed(2) + ' / €' + limit + ' (' + Math.round(percentage) + '%)';
+  return category + ' this month: €' + spend.toFixed(2) + ' / €' + parseFloat(limit).toFixed(2) + ' (' + Math.round(percentage) + '%)';
 }
 
 function formatBudgetAlert(alertResult) {
   var emoji = alertResult.type === 'over_budget' ? '🚨' : '⚠️';
   return emoji + ' ' + alertResult.category + ' budget at ' +
     Math.round(alertResult.percentage) + '% (€' +
-    alertResult.spend.toFixed(2) + ' / €' + alertResult.limit + ')';
+    alertResult.spend.toFixed(2) + ' / €' + parseFloat(alertResult.limit).toFixed(2) + ')';
 }
 
 function sumByCategory(expenses) {
@@ -42,7 +42,7 @@ function formatStatusMessage(expenses, budgets, today, daysInMonth) {
   var totalSpent = expenses.reduce(function(s, e) { return s + (e.eurAmount || 0); }, 0);
   var totalBudget = budgets.reduce(function(s, b) { return s + b.limit; }, 0);
   var dayOfMonth = today.getDate();
-  var projected = daysInMonth > 0 ? (totalSpent / dayOfMonth) * daysInMonth : 0;
+  var projected = (dayOfMonth > 0 && daysInMonth > 0) ? (totalSpent / dayOfMonth) * daysInMonth : 0;
 
   var lines = [
     '📊 <b>' + formatMonthYear(today) + ' — Day ' + dayOfMonth + '/' + daysInMonth + '</b>',
