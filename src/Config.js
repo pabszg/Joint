@@ -3,6 +3,7 @@
 function getConfig() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName('Config');
+  if (!sheet) throw new Error('Config sheet not found. Run setupSpreadsheet() first.');
   var data = sheet.getDataRange().getValues();
   var config = {};
   for (var i = 1; i < data.length; i++) {
@@ -19,8 +20,8 @@ function getConfig() {
     geminiApiKey: config['GeminiAPIKey'] || '',
     telegramBotToken: config['TelegramBotToken'] || '',
     driveFolderId: config['DriveFolderID'] || '',
-    reportDayOfMonth: parseInt(config['ReportDayOfMonth'] || '1', 10),
-    defaultAlertThreshold: parseInt(config['DefaultAlertThreshold'] || '80', 10)
+    reportDayOfMonth: parseInt(config['ReportDayOfMonth'] || '1', 10) || 1,
+    defaultAlertThreshold: parseInt(config['DefaultAlertThreshold'] || '80', 10) || 80
   };
 }
 

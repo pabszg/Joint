@@ -45,3 +45,8 @@ test('getPersonName returns Unknown for unrecognised ID', () => {
   const config = getConfig();
   expect(getPersonName('999', config)).toBe('Unknown');
 });
+
+test('getConfig throws if Config sheet is missing', () => {
+  SpreadsheetApp.getActiveSpreadsheet().getSheetByName.mockReturnValue(null);
+  expect(() => getConfig()).toThrow('Config sheet not found');
+});
