@@ -4,13 +4,42 @@ function doGet() {
   return ContentService.createTextOutput('Expense Tracker bot is running.');
 }
 
+// Drops Telegram retry duplicates — returns true if this update_id was already handled.
+function isDuplicate(updateId) {
+  var props = PropertiesService.getScriptProperties();
+  var last = parseInt(props.getProperty('last_update_id') || '0', 10);
+  if (updateId <= last) return true;
+  props.setProperty('last_update_id', String(updateId));
+  return false;
+}
+
 // Entry point called by Telegram webhook
 function doPost(e) {
+  var chatId = null;
+  var token = null;
   try {
     var update = JSON.parse(e.postData.contents);
+
+    // Drop Telegram retries immediately — stops the welcome-message loop
+    if (update.update_id && isDuplicate(update.update_id)) {
+      return ContentService.createTextOutput('OK');
+    }
+
+    // Capture chatId + token early so we can report errors to the user
+    try {
+      var cfg = getConfig();
+      token = cfg.telegramBotToken;
+      if (update.message) chatId = update.message.chat.id;
+      else if (update.callback_query) chatId = update.callback_query.message.chat.id;
+    } catch (cfgErr) {
+      Logger.log('Config error: ' + cfgErr.message);
+    }
     handleUpdate(update);
   } catch (err) {
     Logger.log('doPost error: ' + err.message);
+    if (chatId && token) {
+      try { sendMessage(token, chatId, '❌ Error interno: ' + err.message); } catch (e) {}
+    }
   }
   return ContentService.createTextOutput('OK');
 }
@@ -57,7 +86,14 @@ function handleTextExpense(message) {
   var categories = getCategories();
   var corrections = getCorrections(20);
 
-  var expense = classifyExpense(message.text, categories, corrections, config.geminiApiKey);
+  var expense;
+  try {
+    expense = classifyExpense(message.text, categories, corrections, config.geminiApiKey);
+  } catch (geminiErr) {
+    Logger.log('Gemini error: ' + geminiErr.message);
+    sendMessage(token, chatId, '❌ No se pudo clasificar el gasto: ' + geminiErr.message);
+    return;
+  }
   expense.eurAmount = expense.amount; // Phase 1: EUR only
   expense.person = getPersonName(message.from.id, config);
   expense.hasItems = expense.has_items || false;
