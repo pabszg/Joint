@@ -28,7 +28,7 @@ function formatBudgetAlert(alertResult) {
     alertResult.spend.toFixed(2) + ' / €' + parseFloat(alertResult.limit).toFixed(2) + ')';
 }
 
-function sumByCategory(expenses) {
+function _budgetSumByCategory(expenses) {
   var totals = {};
   for (var i = 0; i < expenses.length; i++) {
     var cat = expenses[i].category;
@@ -38,7 +38,7 @@ function sumByCategory(expenses) {
 }
 
 function formatStatusMessage(expenses, budgets, today, daysInMonth) {
-  var totals = sumByCategory(expenses);
+  var totals = _budgetSumByCategory(expenses);
   var totalSpent = expenses.reduce(function(s, e) { return s + (e.eurAmount || 0); }, 0);
   var totalBudget = budgets.reduce(function(s, b) { return s + b.limit; }, 0);
   var dayOfMonth = today.getDate();
@@ -73,5 +73,5 @@ function getDaysInMonth(year, month) {
 }
 
 if (typeof module !== 'undefined') {
-  module.exports = { checkBudget, formatBudgetSave, formatBudgetAlert, formatStatusMessage, sumByCategory, getDaysInMonth };
+  module.exports = { checkBudget, formatBudgetSave, formatBudgetAlert, formatStatusMessage, sumByCategory: _budgetSumByCategory, getDaysInMonth };
 }

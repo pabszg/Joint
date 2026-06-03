@@ -56,6 +56,9 @@ function handleTextExpense(message) {
   var expense = classifyExpense(message.text, categories, corrections, config.geminiApiKey);
   expense.eurAmount = expense.amount; // Phase 1: EUR only
   expense.person = getPersonName(message.from.id, config);
+  expense.hasItems = expense.has_items || false;
+  expense.hasItemsData = expense.items || [];
+  expense.currency = expense.currency || 'EUR';
 
   if (isLowConfidence(expense.confidence)) {
     setState(chatId, { action: 'awaiting_confirmation', expense: expense });
@@ -93,6 +96,9 @@ function handlePhotoExpense(message) {
   var expense = classifyReceipt(base64, mimeType, categories, corrections, config.geminiApiKey);
   expense.eurAmount = expense.amount;
   expense.person = getPersonName(message.from.id, config);
+  expense.hasItems = expense.has_items || false;
+  expense.hasItemsData = expense.items || [];
+  expense.currency = expense.currency || 'EUR';
 
   // Try to save receipt to Drive; proceed without it if Drive is unavailable
   expense.receiptUrl = '';
