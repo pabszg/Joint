@@ -44,6 +44,18 @@ test('parseGeminiResponse extracts structured expense', () => {
   expect(parsed.confidence).toBe(0.97);
 });
 
+test('parseGeminiResponse throws readable error on API error response', () => {
+  const errorResponse = JSON.stringify({
+    error: { code: 401, message: 'API key not valid. Please pass a valid API key.', status: 'UNAUTHENTICATED' }
+  });
+  expect(() => parseGeminiResponse(errorResponse)).toThrow('API key not valid');
+});
+
+test('parseGeminiResponse throws when candidates is missing', () => {
+  const emptyResponse = JSON.stringify({ candidates: [] });
+  expect(() => parseGeminiResponse(emptyResponse)).toThrow('no candidates');
+});
+
 test('isLowConfidence returns true below 0.7', () => {
   expect(isLowConfidence(0.65)).toBe(true);
   expect(isLowConfidence(0.69)).toBe(true);

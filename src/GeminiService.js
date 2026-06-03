@@ -39,8 +39,13 @@ function buildSystemPrompt(categories, corrections, today) {
 
 function parseGeminiResponse(responseText) {
   var result = JSON.parse(responseText);
+  if (result.error) {
+    throw new Error(result.error.message || 'Gemini API error');
+  }
+  if (!result.candidates || result.candidates.length === 0) {
+    throw new Error('Gemini returned no candidates. Response: ' + responseText.substring(0, 200));
+  }
   var content = result.candidates[0].content.parts[0].text;
-  // Strip markdown code blocks if present
   var cleaned = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
   return JSON.parse(cleaned);
 }
@@ -50,6 +55,7 @@ function isLowConfidence(confidence) {
 }
 
 function classifyExpense(text, categories, corrections, apiKey) {
+  if (!apiKey) throw new Error('GeminiAPIKey no configurada en la hoja Config.');
   var today = new Date().toISOString().split('T')[0];
   var prompt = buildSystemPrompt(categories, corrections, today);
 
@@ -69,6 +75,7 @@ function classifyExpense(text, categories, corrections, apiKey) {
 }
 
 function classifyReceipt(imageBase64, mimeType, categories, corrections, apiKey) {
+  if (!apiKey) throw new Error('GeminiAPIKey no configurada en la hoja Config.');
   var today = new Date().toISOString().split('T')[0];
   var prompt = buildSystemPrompt(categories, corrections, today);
   prompt += '\n\nExtract expense data from this receipt image.';
