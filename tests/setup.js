@@ -1,6 +1,7 @@
 // tests/setup.js
 // Mock all Apps Script globals used by the source files.
 // Tests override individual methods with jest.fn() as needed.
+require('dotenv').config();
 
 const mockSheet = {
   getLastRow: jest.fn().mockReturnValue(1),

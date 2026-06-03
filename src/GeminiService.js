@@ -1,6 +1,6 @@
 // src/GeminiService.js
 
-var GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+var GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
 function buildSystemPrompt(categories, corrections, today) {
   var categoryList = categories.join(', ');

@@ -11,7 +11,11 @@ function telegramPost(token, method, payload) {
     payload: JSON.stringify(payload),
     muteHttpExceptions: true
   });
-  return JSON.parse(response.getContentText());
+  var result = JSON.parse(response.getContentText());
+  if (!result.ok) {
+    Logger.log('Telegram API error [' + method + ']: ' + JSON.stringify(result));
+  }
+  return result;
 }
 
 function sendMessage(token, chatId, text) {
@@ -25,9 +29,9 @@ function sendMessage(token, chatId, text) {
 function sendConfirmation(token, chatId, text, expense) {
   var keyboard = {
     inline_keyboard: [[
-      { text: '✅ Confirm', callback_data: 'confirm' },
-      { text: '✏️ Edit', callback_data: 'edit' },
-      { text: '❌ Cancel', callback_data: 'cancel' }
+      { text: '✅ Confirmar', callback_data: 'confirm' },
+      { text: '✏️ Editar', callback_data: 'edit' },
+      { text: '❌ Cancelar', callback_data: 'cancel' }
     ]]
   };
   return telegramPost(token, 'sendMessage', {
@@ -41,16 +45,16 @@ function sendConfirmation(token, chatId, text, expense) {
 function sendEditFieldMenu(token, chatId) {
   var keyboard = {
     inline_keyboard: [[
-      { text: 'Merchant', callback_data: 'edit_merchant' },
-      { text: 'Amount', callback_data: 'edit_amount' }
+      { text: 'Comercio', callback_data: 'edit_merchant' },
+      { text: 'Importe', callback_data: 'edit_amount' }
     ], [
-      { text: 'Category', callback_data: 'edit_category' },
-      { text: 'Date', callback_data: 'edit_date' }
+      { text: 'Categoría', callback_data: 'edit_category' },
+      { text: 'Fecha', callback_data: 'edit_date' }
     ]]
   };
   return telegramPost(token, 'sendMessage', {
     chat_id: chatId,
-    text: 'Which field do you want to edit?',
+    text: '¿Qué campo quieres editar?',
     reply_markup: JSON.stringify(keyboard)
   });
 }
@@ -76,12 +80,12 @@ function downloadFile(token, filePath) {
 
 function formatExpenseConfirmation(expense) {
   return [
-    '🧾 <b>Expense parsed:</b>',
-    'Merchant: ' + expense.merchant,
-    'Amount: ' + formatAmount(expense.amount, expense.currency),
-    'Category: ' + getCategoryEmoji(expense.category) + ' ' + expense.category,
-    'Date: ' + expense.date,
-    expense.receiptUrl ? 'Receipt saved to Drive ✓' : ''
+    '🧾 <b>Gasto detectado:</b>',
+    'Comercio: ' + expense.merchant,
+    'Importe: ' + formatAmount(expense.amount, expense.currency),
+    'Categoría: ' + getCategoryEmoji(expense.category) + ' ' + expense.category,
+    'Fecha: ' + expense.date,
+    expense.receiptUrl ? 'Recibo guardado en Drive ✓' : ''
   ].filter(Boolean).join('\n');
 }
 
@@ -102,7 +106,7 @@ function getCategoryEmoji(category) {
 
 if (typeof module !== 'undefined') {
   module.exports = {
-    sendMessage, sendConfirmation, sendEditFieldMenu,
+    telegramPost, sendMessage, sendConfirmation, sendEditFieldMenu,
     answerCallbackQuery, getFilePath, downloadFile,
     formatExpenseConfirmation, formatAmount, getCategoryEmoji
   };

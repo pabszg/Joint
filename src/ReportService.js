@@ -29,12 +29,12 @@ function buildWeeklyDigest(expenses, budgets, monthBudgetTotal) {
   var top3 = topCategories(totals, 3);
 
   var lines = [
-    '📋 <b>Weekly Digest</b>',
-    'Week total: €' + total.toFixed(2),
+    '📋 <b>Resumen Semanal</b>',
+    'Total de la semana: €' + total.toFixed(2),
     ''
   ];
 
-  lines.push('Top categories:');
+  lines.push('Categorías principales:');
   top3.forEach(function(item, i) {
     lines.push((i + 1) + '. ' + item.category + ': €' + item.amount.toFixed(0));
   });
@@ -49,13 +49,13 @@ function buildMonthlyReport(expenses, budgets, monthLabel, totalBudget, sheetsUr
   var top5 = topCategories(categoryTotals, 5);
   var saved = totalBudget - total;
   var budgetLine = saved >= 0
-    ? 'You saved €' + saved.toFixed(2) + ' this month! 🎉'
-    : 'You were €' + Math.abs(saved).toFixed(2) + ' over budget. 📈';
+    ? '¡Ahorraste €' + saved.toFixed(2) + ' este mes! 🎉'
+    : 'Te pasaste €' + Math.abs(saved).toFixed(2) + ' del presupuesto. 📈';
 
   var lines = [
-    '📋 <b>' + monthLabel + ' — Final Report</b>',
+    '📋 <b>' + monthLabel + ' — Informe Final</b>',
     '',
-    'Total: €' + total.toFixed(2) + ' / €' + totalBudget + ' budget',
+    'Total: €' + total.toFixed(2) + ' / €' + totalBudget + ' presupuesto',
     budgetLine,
     ''
   ];
@@ -66,14 +66,14 @@ function buildMonthlyReport(expenses, budgets, monthLabel, totalBudget, sheetsUr
   });
 
   lines.push('');
-  lines.push('Top categories:');
+  lines.push('Categorías principales:');
   top5.forEach(function(item, i) {
     lines.push((i + 1) + '. ' + item.category + ': €' + item.amount.toFixed(0));
   });
 
   if (sheetsUrl) {
     lines.push('');
-    lines.push('📄 Full report → ' + sheetsUrl);
+    lines.push('📄 Informe completo → ' + sheetsUrl);
   }
 
   return lines.join('\n');

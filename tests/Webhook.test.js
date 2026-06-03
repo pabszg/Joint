@@ -80,7 +80,7 @@ test('handleCancelCallback clears state and sends cancellation message', () => {
   handleCallbackQuery(callbackQuery);
   expect(global.clearState).toHaveBeenCalledWith(123);
   expect(global.sendMessage).toHaveBeenCalledWith(
-    expect.any(String), 123, expect.stringContaining('cancelled')
+    expect.any(String), 123, expect.stringContaining('cancelado')
   );
 });
 
@@ -92,4 +92,48 @@ test('handleStatus sends formatted status message', () => {
   expect(global.sendMessage).toHaveBeenCalledWith(
     expect.any(String), 123, expect.any(String)
   );
+});
+
+test('handleUpdate routes /start to handleStart and sends welcome message', () => {
+  loadWebhook();
+  const message = { chat: { id: 123 }, from: { id: 111 }, text: '/start' };
+  handleUpdate({ update_id: 1, message });
+  expect(global.sendMessage).toHaveBeenCalledWith(
+    'test-token', 123, expect.stringContaining('Bienvenido')
+  );
+});
+
+describe('isDuplicate', () => {
+  let store;
+  beforeEach(() => {
+    store = {};
+    // mockReturnValue (not a factory) is intentional — the same object must be returned on
+    // every getScriptProperties() call so that state written by one isDuplicate() call is
+    // visible to the next call within the same test.
+    PropertiesService.getScriptProperties = jest.fn().mockReturnValue({
+      getProperty: jest.fn((key) => store[key] || null),
+      setProperty: jest.fn((key, value) => { store[key] = value; }),
+      deleteProperty: jest.fn((key) => { delete store[key]; })
+    });
+    loadWebhook();
+  });
+
+  test('first occurrence of an update_id is not a duplicate', () => {
+    expect(isDuplicate(1000)).toBe(false);
+  });
+
+  test('same update_id a second time is a duplicate', () => {
+    isDuplicate(1000);
+    expect(isDuplicate(1000)).toBe(true);
+  });
+
+  test('higher update_id after a stored one is not a duplicate', () => {
+    isDuplicate(1000);
+    expect(isDuplicate(1001)).toBe(false);
+  });
+
+  test('lower update_id than stored is treated as duplicate', () => {
+    isDuplicate(1000);
+    expect(isDuplicate(999)).toBe(true);
+  });
 });

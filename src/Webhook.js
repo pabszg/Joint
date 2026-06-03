@@ -280,7 +280,7 @@ if (typeof module !== 'undefined') {
   var _exports = {
     handleUpdate, handleTextExpense, handlePhotoExpense,
     handleCallbackQuery, handleStatus, handleConfirmCallback,
-    handleCancelCallback
+    handleCancelCallback, isDuplicate
   };
   // Assign to global so tests can call functions directly (mirrors Apps Script global scope)
   Object.keys(_exports).forEach(function(key) { global[key] = _exports[key]; });

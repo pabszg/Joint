@@ -5,3 +5,6 @@ node_modules/
 
 # Spartan AI config (contains API keys)
 .spartan/ai.env
+
+# Local secrets — never commit
+.env

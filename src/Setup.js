@@ -177,6 +177,16 @@ function setWebhook() {
   Logger.log(result.ok ? 'Webhook set: ' + WEB_APP_URL : 'Failed: ' + JSON.stringify(result));
 }
 
+/**
+ * Run this from the Apps Script editor if the bot stops responding to all messages.
+ * This resets the deduplication state so the next incoming update is processed fresh.
+ * After resetting, Telegram may retry the last update — this is harmless but expected.
+ */
+function resetDeduplication() {
+  PropertiesService.getScriptProperties().deleteProperty('last_update_id');
+  Logger.log('Deduplication state reset. The next Telegram update will be processed.');
+}
+
 function deleteWebhook() {
   var config = getConfig();
   var response = UrlFetchApp.fetch(

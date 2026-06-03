@@ -18,12 +18,12 @@ function checkBudget(category, spend, budgets) {
 }
 
 function formatBudgetSave(category, spend, limit, percentage) {
-  return category + ' this month: €' + spend.toFixed(2) + ' / €' + parseFloat(limit).toFixed(2) + ' (' + Math.round(percentage) + '%)';
+  return category + ' este mes: €' + spend.toFixed(2) + ' / €' + parseFloat(limit).toFixed(2) + ' (' + Math.round(percentage) + '%)';
 }
 
 function formatBudgetAlert(alertResult) {
   var emoji = alertResult.type === 'over_budget' ? '🚨' : '⚠️';
-  return emoji + ' ' + alertResult.category + ' budget at ' +
+  return emoji + ' Presupuesto de ' + alertResult.category + ' al ' +
     Math.round(alertResult.percentage) + '% (€' +
     alertResult.spend.toFixed(2) + ' / €' + parseFloat(alertResult.limit).toFixed(2) + ')';
 }
@@ -45,9 +45,9 @@ function formatStatusMessage(expenses, budgets, today, daysInMonth) {
   var projected = (dayOfMonth > 0 && daysInMonth > 0) ? (totalSpent / dayOfMonth) * daysInMonth : 0;
 
   var lines = [
-    '📊 <b>' + formatMonthYear(today) + ' — Day ' + dayOfMonth + '/' + daysInMonth + '</b>',
-    'Total spent: €' + totalSpent.toFixed(2) + ' / €' + totalBudget,
-    'Projected month-end: €' + projected.toFixed(2),
+    '📊 <b>' + formatMonthYear(today) + ' — Día ' + dayOfMonth + '/' + daysInMonth + '</b>',
+    'Total gastado: €' + totalSpent.toFixed(2) + ' / €' + totalBudget,
+    'Proyección fin de mes: €' + projected.toFixed(2),
     ''
   ];
 
@@ -63,8 +63,8 @@ function formatStatusMessage(expenses, budgets, today, daysInMonth) {
 }
 
 function formatMonthYear(date) {
-  var months = ['January','February','March','April','May','June',
-                'July','August','September','October','November','December'];
+  var months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   return months[date.getMonth()] + ' ' + date.getFullYear();
 }
 

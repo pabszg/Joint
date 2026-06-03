@@ -4,11 +4,14 @@
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:telegram": "node tests/integration/telegram.test.js",
+    "test:gemini": "node tests/integration/gemini.test.js",
     "push": "clasp push",
     "pull": "clasp pull"
   },
   "devDependencies": {
-    "jest": "^30.0.0",
-    "@google/clasp": "^2.4.2"
+    "@google/clasp": "^2.4.2",
+    "dotenv": "^17.4.2",
+    "jest": "^30.0.0"
   }
 }
