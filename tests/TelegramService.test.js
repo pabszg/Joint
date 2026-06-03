@@ -1,5 +1,5 @@
 // tests/TelegramService.test.js
-const { formatExpenseConfirmation, formatAmount, getCategoryEmoji, telegramPost } = require('../src/TelegramService');
+const { formatExpenseConfirmation, formatAmount, getCategoryEmoji, telegramPost, sendConfirmation, sendEditFieldMenu } = require('../src/TelegramService');
 
 test('formatAmount formats EUR correctly', () => {
   expect(formatAmount(47.3, 'EUR')).toBe('€47.30');
@@ -28,6 +28,36 @@ test('formatExpenseConfirmation omits receipt line when no URL', () => {
   const expense = { merchant: 'Mercadona', amount: 47.3, currency: 'EUR', category: 'Groceries', date: '2026-06-03', receiptUrl: '' };
   const text = formatExpenseConfirmation(expense);
   expect(text).not.toContain('Recibo guardado');
+});
+
+test('sendConfirmation sends reply_markup as an object, not a JSON string', () => {
+  let capturedBody;
+  global.UrlFetchApp.fetch = jest.fn().mockImplementation((_url, options) => {
+    capturedBody = JSON.parse(options.payload);
+    return {
+      getContentText: jest.fn().mockReturnValue(JSON.stringify({ ok: true, result: {} })),
+      getContent: jest.fn().mockReturnValue([])
+    };
+  });
+  const expense = { merchant: 'Mercadona', amount: 47.3, currency: 'EUR', category: 'Groceries', date: '2026-06-03' };
+  sendConfirmation('token', 123, 'text', expense);
+  // Telegram requires reply_markup to be an object when content-type is application/json
+  expect(typeof capturedBody.reply_markup).toBe('object');
+  expect(capturedBody.reply_markup.inline_keyboard).toBeDefined();
+});
+
+test('sendEditFieldMenu sends reply_markup as an object, not a JSON string', () => {
+  let capturedBody;
+  global.UrlFetchApp.fetch = jest.fn().mockImplementation((_url, options) => {
+    capturedBody = JSON.parse(options.payload);
+    return {
+      getContentText: jest.fn().mockReturnValue(JSON.stringify({ ok: true, result: {} })),
+      getContent: jest.fn().mockReturnValue([])
+    };
+  });
+  sendEditFieldMenu('token', 123);
+  expect(typeof capturedBody.reply_markup).toBe('object');
+  expect(capturedBody.reply_markup.inline_keyboard).toBeDefined();
 });
 
 test('telegramPost logs error when Telegram API returns ok: false', () => {

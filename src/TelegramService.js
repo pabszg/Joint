@@ -38,7 +38,7 @@ function sendConfirmation(token, chatId, text, expense) {
     chat_id: chatId,
     text: text,
     parse_mode: 'HTML',
-    reply_markup: JSON.stringify(keyboard)
+    reply_markup: keyboard
   });
 }
 
@@ -55,7 +55,7 @@ function sendEditFieldMenu(token, chatId) {
   return telegramPost(token, 'sendMessage', {
     chat_id: chatId,
     text: '¿Qué campo quieres editar?',
-    reply_markup: JSON.stringify(keyboard)
+    reply_markup: keyboard
   });
 }
 
