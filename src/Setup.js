@@ -89,9 +89,19 @@ function setHeaders(sheet, headers) {
 }
 
 /**
- * Step 1: Run this once with your Google Sheet ID to configure the bot.
+ * Step 1: Edit YOUR_SHEET_ID below, then run this function once from the editor.
  * Get the ID from your Sheet URL: docs.google.com/spreadsheets/d/YOUR_ID_HERE/edit
  */
+function configureBot() {
+  var SHEET_ID = 'YOUR_SHEET_ID'; // ← paste your Sheet ID here
+  if (SHEET_ID === 'YOUR_SHEET_ID') {
+    throw new Error('Please replace YOUR_SHEET_ID in configureBot() before running.');
+  }
+  PropertiesService.getScriptProperties().setProperty('SPREADSHEET_ID', SHEET_ID);
+  Logger.log('Spreadsheet ID saved: ' + SHEET_ID);
+}
+
+// Keep the parameterised version for programmatic use
 function setSpreadsheetId(id) {
   PropertiesService.getScriptProperties().setProperty('SPREADSHEET_ID', id);
   Logger.log('Spreadsheet ID saved: ' + id);
