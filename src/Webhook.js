@@ -20,16 +20,17 @@ function handleUpdate(update) {
   if (!message) return;
 
   var chatId = message.chat.id;
-  var state = getState(chatId);
+  var text = message.text || '';
 
+  // Commands always take priority over conversation state
+  if (text === '/start') { handleStart(message); return; }
+  if (text === '/status') { handleStatus(message); return; }
+
+  var state = getState(chatId);
   if (state && state.action === 'awaiting_edit_value') {
     handleEditValueReply(message, state);
     return;
   }
-
-  var text = message.text || '';
-  if (text === '/start') { handleStart(message); return; }
-  if (text === '/status') { handleStatus(message); return; }
 
   if (message.photo) { handlePhotoExpense(message); return; }
   if (text) { handleTextExpense(message); return; }
@@ -93,10 +94,15 @@ function handlePhotoExpense(message) {
   expense.eurAmount = expense.amount;
   expense.person = getPersonName(message.from.id, config);
 
-  // Generate a temporary ID for naming the Drive file
-  var tempId = 'TEMP-' + Date.now();
-  var receiptUrl = saveReceiptToDrive(byteArray, tempId, mimeType, config.driveFolderId);
-  expense.receiptUrl = receiptUrl;
+  // Try to save receipt to Drive; proceed without it if Drive is unavailable
+  expense.receiptUrl = '';
+  try {
+    var tempId = 'TEMP-' + Date.now();
+    expense.receiptUrl = saveReceiptToDrive(byteArray, tempId, mimeType, config.driveFolderId);
+  } catch (driveErr) {
+    Logger.log('Drive save failed: ' + driveErr.message);
+    sendMessage(token, chatId, '⚠️ Could not save receipt image to Drive (continuing without it).');
+  }
 
   setState(chatId, { action: 'awaiting_confirmation', expense: expense });
   sendConfirmation(token, chatId, formatExpenseConfirmation(expense), expense);
@@ -107,6 +113,11 @@ function handleCallbackQuery(callbackQuery) {
   var token = config.telegramBotToken;
   var chatId = callbackQuery.message.chat.id;
   var data = callbackQuery.data;
+
+  if (!data) {
+    answerCallbackQuery(token, callbackQuery.id);
+    return;
+  }
 
   answerCallbackQuery(token, callbackQuery.id);
 
@@ -123,8 +134,15 @@ function handleConfirmCallback(callbackQuery, config) {
   if (!state || state.action !== 'awaiting_confirmation') return;
 
   var expense = state.expense;
-  var expenseId = appendExpense(expense);
-  clearState(chatId);
+  var expenseId;
+  try {
+    expenseId = appendExpense(expense);
+  } catch (saveErr) {
+    Logger.log('appendExpense failed: ' + saveErr.message);
+    sendMessage(token, chatId, '❌ Failed to save expense. Please try again.');
+    return; // state kept so user can retry
+  }
+  clearState(chatId); // only clear after successful save
 
   var now = new Date();
   var monthSpend = getCategoryMonthSpend(expense.category, now.getFullYear(), now.getMonth() + 1);
@@ -163,7 +181,7 @@ function handleEditFieldCallback(callbackQuery, token) {
   var chatId = callbackQuery.message.chat.id;
   var field = callbackQuery.data.replace('edit_', '');
   var state = getState(chatId);
-  if (!state) return;
+  if (!state || state.action !== 'awaiting_confirmation') return;
   setState(chatId, { action: 'awaiting_edit_value', expense: state.expense, editField: field });
   sendMessage(token, chatId, 'Enter new value for <b>' + field + '</b>:');
 }
@@ -177,8 +195,13 @@ function handleEditValueReply(message, state) {
   var value = message.text.trim();
 
   if (field === 'amount') {
-    expense.amount = parseFloat(value);
-    expense.eurAmount = parseFloat(value);
+    var parsed = parseFloat(value);
+    if (isNaN(parsed) || parsed <= 0) {
+      sendMessage(config.telegramBotToken, chatId, '❌ Invalid amount. Please enter a number (e.g. 47.30):');
+      return; // keep state so user can retry
+    }
+    expense.amount = parsed;
+    expense.eurAmount = parsed;
   } else if (field === 'date') {
     expense.date = value;
   } else if (field === 'category') {
