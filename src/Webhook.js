@@ -1,5 +1,9 @@
 // src/Webhook.js
 
+function doGet() {
+  return ContentService.createTextOutput('Expense Tracker bot is running.');
+}
+
 // Entry point called by Telegram webhook
 function doPost(e) {
   try {
@@ -40,9 +44,9 @@ function handleStart(message) {
   var config = getConfig();
   var token = config.telegramBotToken;
   sendMessage(token, message.chat.id,
-    '👋 Welcome to your Expense Tracker!\n\n' +
-    'Send me an expense like <b>"Mercadona 47.30"</b> or send a photo of a receipt.\n\n' +
-    'Commands:\n/status — see this month\'s spending'
+    '👋 ¡Bienvenido/a a tu Registro de Gastos!\n\n' +
+    'Envíame un gasto como <b>"Mercadona 47.30"</b> o envía una foto de un recibo.\n\n' +
+    'Comandos:\n/status — ver el gasto de este mes'
   );
 }
 
@@ -63,7 +67,7 @@ function handleTextExpense(message) {
   if (isLowConfidence(expense.confidence)) {
     setState(chatId, { action: 'awaiting_confirmation', expense: expense });
     var confirmText = formatExpenseConfirmation(expense) +
-      '\n\n⚠️ Low confidence (' + Math.round(expense.confidence * 100) + '%). Please confirm:';
+      '\n\n⚠️ Confianza baja (' + Math.round(expense.confidence * 100) + '%). Por favor confirma:';
     sendConfirmation(token, chatId, confirmText, expense);
     return;
   }
@@ -77,13 +81,13 @@ function handlePhotoExpense(message) {
   var chatId = message.chat.id;
   var token = config.telegramBotToken;
 
-  sendMessage(token, chatId, '⏳ Reading receipt…');
+  sendMessage(token, chatId, '⏳ Leyendo recibo…');
 
   var photos = message.photo;
   var largestPhoto = photos[photos.length - 1];
   var filePath = getFilePath(token, largestPhoto.file_id);
   if (!filePath) {
-    sendMessage(token, chatId, '❌ Could not download the photo. Please try again.');
+    sendMessage(token, chatId, '❌ No se pudo descargar la foto. Por favor inténtalo de nuevo.');
     return;
   }
 
@@ -107,7 +111,7 @@ function handlePhotoExpense(message) {
     expense.receiptUrl = saveReceiptToDrive(byteArray, tempId, mimeType, config.driveFolderId);
   } catch (driveErr) {
     Logger.log('Drive save failed: ' + driveErr.message);
-    sendMessage(token, chatId, '⚠️ Could not save receipt image to Drive (continuing without it).');
+    sendMessage(token, chatId, '⚠️ No se pudo guardar la imagen del recibo en Drive (continuando sin ella).');
   }
 
   setState(chatId, { action: 'awaiting_confirmation', expense: expense });
@@ -145,7 +149,7 @@ function handleConfirmCallback(callbackQuery, config) {
     expenseId = appendExpense(expense);
   } catch (saveErr) {
     Logger.log('appendExpense failed: ' + saveErr.message);
-    sendMessage(token, chatId, '❌ Failed to save expense. Please try again.');
+    sendMessage(token, chatId, '❌ Error al guardar el gasto. Por favor inténtalo de nuevo.');
     return; // state kept so user can retry
   }
   clearState(chatId); // only clear after successful save
@@ -158,7 +162,7 @@ function handleConfirmCallback(callbackQuery, config) {
     if (budgets[i].category === expense.category) { budgetForCategory = budgets[i]; break; }
   }
 
-  var savedLine = '✔️ Saved!';
+  var savedLine = '✔️ ¡Guardado!';
   if (budgetForCategory) {
     var pct = Math.round((monthSpend / budgetForCategory.limit) * 100);
     savedLine += ' ' + formatBudgetSave(expense.category, monthSpend, budgetForCategory.limit, pct);
@@ -175,7 +179,7 @@ function handleConfirmCallback(callbackQuery, config) {
 function handleCancelCallback(callbackQuery, token) {
   var chatId = callbackQuery.message.chat.id;
   clearState(chatId);
-  sendMessage(token, chatId, 'Expense cancelled.');
+  sendMessage(token, chatId, 'Gasto cancelado.');
 }
 
 function handleEditCallback(callbackQuery, token) {
@@ -189,7 +193,7 @@ function handleEditFieldCallback(callbackQuery, token) {
   var state = getState(chatId);
   if (!state || state.action !== 'awaiting_confirmation') return;
   setState(chatId, { action: 'awaiting_edit_value', expense: state.expense, editField: field });
-  sendMessage(token, chatId, 'Enter new value for <b>' + field + '</b>:');
+  sendMessage(token, chatId, 'Introduce el nuevo valor para <b>' + field + '</b>:');
 }
 
 function handleEditValueReply(message, state) {
@@ -203,7 +207,7 @@ function handleEditValueReply(message, state) {
   if (field === 'amount') {
     var parsed = parseFloat(value);
     if (isNaN(parsed) || parsed <= 0) {
-      sendMessage(config.telegramBotToken, chatId, '❌ Invalid amount. Please enter a number (e.g. 47.30):');
+      sendMessage(config.telegramBotToken, chatId, '❌ Importe no válido. Por favor introduce un número (p.ej. 47.30):');
       return; // keep state so user can retry
     }
     expense.amount = parsed;
