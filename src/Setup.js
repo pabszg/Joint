@@ -152,21 +152,29 @@ function setupSpreadsheet() {
 }
 
 /**
- * Call this from the Apps Script editor after deploying as a Web App.
- * Paste your Web App URL and Bot Token in the Config sheet first.
- * Run once to register the Telegram webhook.
+ * Step 5: Paste your Web App URL below, then run this once to register the Telegram webhook.
+ * Get the URL from: Deploy → Manage deployments → copy the Web app URL.
  */
 function setWebhook() {
+  var WEB_APP_URL = 'YOUR_WEBAPP_URL'; // ← paste your Web App URL here
+  if (WEB_APP_URL === 'YOUR_WEBAPP_URL') {
+    throw new Error('Paste your Web App URL into setWebhook() before running.');
+  }
+
   var config = getConfig();
-  var url = 'https://api.telegram.org/bot' + config.telegramBotToken + '/setWebhook';
-  var response = UrlFetchApp.fetch(url, {
+  if (!config.telegramBotToken) {
+    throw new Error('TelegramBotToken is empty in the Config sheet.');
+  }
+
+  var apiUrl = 'https://api.telegram.org/bot' + config.telegramBotToken + '/setWebhook';
+  var response = UrlFetchApp.fetch(apiUrl, {
     method: 'post',
     contentType: 'application/json',
-    payload: JSON.stringify({ url: ScriptApp.getService().getUrl() }),
+    payload: JSON.stringify({ url: WEB_APP_URL }),
     muteHttpExceptions: true
   });
   var result = JSON.parse(response.getContentText());
-  Logger.log(result.ok ? 'Webhook set successfully.' : 'Failed: ' + JSON.stringify(result));
+  Logger.log(result.ok ? 'Webhook set: ' + WEB_APP_URL : 'Failed: ' + JSON.stringify(result));
 }
 
 function deleteWebhook() {

@@ -7,19 +7,19 @@ function getConfig() {
   var data = sheet.getDataRange().getValues();
   var config = {};
   for (var i = 1; i < data.length; i++) {
-    var key = data[i][0];
+    var key = String(data[i][0]).trim();
     var value = data[i][1];
-    if (key) config[key] = value;
+    if (key) config[key] = (typeof value === 'string') ? value.trim() : value;
   }
   return {
     user1Name: config['User1Name'] || 'User1',
-    user1TelegramId: String(config['User1TelegramID'] || ''),
+    user1TelegramId: String(config['User1TelegramID'] || '').trim(),
     user2Name: config['User2Name'] || 'User2',
-    user2TelegramId: String(config['User2TelegramID'] || ''),
+    user2TelegramId: String(config['User2TelegramID'] || '').trim(),
     baseCurrency: config['BaseCurrency'] || 'EUR',
-    geminiApiKey: config['GeminiAPIKey'] || '',
-    telegramBotToken: config['TelegramBotToken'] || '',
-    driveFolderId: config['DriveFolderID'] || '',
+    geminiApiKey: (config['GeminiAPIKey'] || '').trim(),
+    telegramBotToken: (config['TelegramBotToken'] || '').trim(),
+    driveFolderId: (config['DriveFolderID'] || '').trim(),
     reportDayOfMonth: parseInt(config['ReportDayOfMonth'] || '1', 10) || 1,
     defaultAlertThreshold: parseInt(config['DefaultAlertThreshold'] || '80', 10) || 80
   };
