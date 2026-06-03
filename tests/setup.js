@@ -109,6 +109,18 @@ global.ScriptApp = {
   WeekDay: { SUNDAY: 1, MONDAY: 2 }
 };
 
+const mockLock = {
+  waitLock: jest.fn(),
+  releaseLock: jest.fn(),
+  hasLock: jest.fn().mockReturnValue(true)
+};
+
+global.LockService = {
+  getScriptLock: jest.fn().mockReturnValue(mockLock),
+  getUserLock: jest.fn().mockReturnValue(mockLock),
+  getDocumentLock: jest.fn().mockReturnValue(mockLock)
+};
+
 beforeEach(() => {
   jest.clearAllMocks();
 });

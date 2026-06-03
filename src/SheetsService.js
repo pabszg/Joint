@@ -18,23 +18,31 @@ function generateExpenseId() {
 }
 
 function appendExpense(expense) {
-  var sheet = getSheet('Expenses');
-  var id = generateExpenseId();
-  var row = [
-    id,
-    expense.date,
-    expense.merchant,
-    expense.amount,
-    expense.currency,
-    expense.eurAmount,
-    expense.category,
-    expense.person,
-    expense.notes || '',
-    expense.hasItems || false,
-    expense.receiptUrl || ''
-  ];
-  sheet.appendRow(row);
-  return id;
+  var lock = LockService.getScriptLock();
+  lock.waitLock(10000); // wait up to 10 seconds
+  try {
+    var sheet = getSheet('Expenses');
+    var id = generateExpenseId();
+    var row = [
+      id,
+      expense.date,
+      expense.merchant,
+      expense.amount,
+      expense.currency,
+      expense.eurAmount,
+      expense.category,
+      expense.person,
+      expense.notes || '',
+      expense.hasItems || false,
+      expense.receiptUrl || ''
+    ];
+    sheet.appendRow(row);
+    return id;
+  } catch (e) {
+    throw new Error('Failed to save expense: ' + e.message);
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 function getMonthExpenses(year, month) {
@@ -113,7 +121,7 @@ function getCategories() {
   var data = sheet.getDataRange().getValues();
   var results = [];
   for (var i = 1; i < data.length; i++) {
-    if (data[i][2] !== false) { // Active column
+    if (data[i][2] === true) { // Active column
       results.push(data[i][0]);
     }
   }
@@ -124,7 +132,9 @@ function getCorrections(limit) {
   var sheet = getSheet('Corrections');
   var lastRow = sheet.getLastRow();
   if (lastRow <= 1) return [];
-  var startRow = Math.max(2, lastRow - (limit || 20) + 1);
+  var effectiveLimit = (limit === 0) ? 0 : (limit || 20);
+  if (effectiveLimit === 0) return [];
+  var startRow = Math.max(2, lastRow - effectiveLimit + 1);
   var numRows = lastRow - startRow + 1;
   var data = sheet.getRange(startRow, 1, numRows, 5).getValues();
   return data.map(function(row) {
@@ -140,7 +150,7 @@ function getCorrections(limit) {
 
 function appendCorrection(merchant, geminiGuess, userCorrection, confidence) {
   var sheet = getSheet('Corrections');
-  sheet.appendRow([new Date().toISOString(), merchant, geminiGuess, userCorrection, confidence]);
+  sheet.appendRow([new Date(), merchant, geminiGuess, userCorrection, confidence]);
 }
 
 if (typeof module !== 'undefined') {
