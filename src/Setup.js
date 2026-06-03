@@ -88,8 +88,17 @@ function setHeaders(sheet, headers) {
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
 }
 
+/**
+ * Step 1: Run this once with your Google Sheet ID to configure the bot.
+ * Get the ID from your Sheet URL: docs.google.com/spreadsheets/d/YOUR_ID_HERE/edit
+ */
+function setSpreadsheetId(id) {
+  PropertiesService.getScriptProperties().setProperty('SPREADSHEET_ID', id);
+  Logger.log('Spreadsheet ID saved: ' + id);
+}
+
 function setupSpreadsheet() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = getSpreadsheet();
 
   var expenses = getOrCreateSheet(ss, SHEET_NAMES.EXPENSES);
   setHeaders(expenses, EXPENSE_HEADERS);

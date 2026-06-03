@@ -1,7 +1,7 @@
 // src/Config.js
 
 function getConfig() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = getSpreadsheet();
   var sheet = ss.getSheetByName('Config');
   if (!sheet) throw new Error('Config sheet not found. Run setupSpreadsheet() first.');
   var data = sheet.getDataRange().getValues();

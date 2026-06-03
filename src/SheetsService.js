@@ -1,5 +1,17 @@
 // src/SheetsService.js
 
+/**
+ * Returns the active spreadsheet.
+ * In standalone mode (this project): reads SPREADSHEET_ID from Script Properties.
+ * Run setSpreadsheetId("YOUR_SHEET_ID") once from the Apps Script editor to configure.
+ * Falls back to getActiveSpreadsheet() for tests and bound-script deployments.
+ */
+function getSpreadsheet() {
+  var id = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
+  if (id) return SpreadsheetApp.openById(id);
+  return SpreadsheetApp.getActiveSpreadsheet();
+}
+
 // Column indices for Expenses tab (0-based)
 var EXP_COLS = {
   ID: 0, DATE: 1, MERCHANT: 2, AMOUNT: 3, CURRENCY: 4,
@@ -8,7 +20,7 @@ var EXP_COLS = {
 };
 
 function getSheet(name) {
-  return SpreadsheetApp.getActiveSpreadsheet().getSheetByName(name);
+  return getSpreadsheet().getSheetByName(name);
 }
 
 function generateExpenseId() {

@@ -121,6 +121,16 @@ global.LockService = {
   getDocumentLock: jest.fn().mockReturnValue(mockLock)
 };
 
+// getSpreadsheet() is defined in SheetsService.js and used by Config.js and Setup.js.
+// In tests, files are loaded individually (not all in global scope), so we provide
+// the real implementation here. It delegates to the already-mocked SpreadsheetApp,
+// exactly mirroring the production fallback path.
+global.getSpreadsheet = function() {
+  var id = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
+  if (id) return SpreadsheetApp.openById(id);
+  return SpreadsheetApp.getActiveSpreadsheet();
+};
+
 beforeEach(() => {
   jest.clearAllMocks();
 });
