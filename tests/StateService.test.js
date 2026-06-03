@@ -2,7 +2,7 @@ let storedProperties = {};
 
 beforeEach(() => {
   storedProperties = {};
-  PropertiesService.getUserProperties.mockReturnValue({
+  PropertiesService.getScriptProperties = jest.fn().mockReturnValue({
     getProperty: jest.fn((key) => storedProperties[key] || null),
     setProperty: jest.fn((key, value) => { storedProperties[key] = value; }),
     deleteProperty: jest.fn((key) => { delete storedProperties[key]; })
@@ -11,12 +11,12 @@ beforeEach(() => {
 
 const { getState, setState, clearState } = require('../src/StateService');
 
-test('setState stores serialized state', () => {
+test('setState stores state retrievable by getState', () => {
   const state = { action: 'awaiting_confirmation', expense: { merchant: 'Zara' } };
   setState(123, state);
-  const stored = JSON.parse(storedProperties['state_123']);
-  expect(stored.data.action).toBe('awaiting_confirmation');
-  expect(stored.data.expense.merchant).toBe('Zara');
+  const retrieved = getState(123);
+  expect(retrieved.action).toBe('awaiting_confirmation');
+  expect(retrieved.expense.merchant).toBe('Zara');
 });
 
 test('getState returns null when no state stored', () => {
@@ -39,4 +39,9 @@ test('clearState removes the stored property', () => {
   setState(123, { action: 'awaiting_confirmation' });
   clearState(123);
   expect(storedProperties['state_123']).toBeUndefined();
+});
+
+test('state is isolated between different chatIds', () => {
+  setState(111, { action: 'awaiting_confirmation' });
+  expect(getState(222)).toBeNull();
 });

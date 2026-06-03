@@ -35,6 +35,14 @@ global.PropertiesService = {
       setProperty: jest.fn((key, value) => { store[key] = value; }),
       deleteProperty: jest.fn((key) => { delete store[key]; })
     };
+  }),
+  getScriptProperties: jest.fn(() => {
+    const store = {};
+    return {
+      getProperty: jest.fn((key) => store[key] || null),
+      setProperty: jest.fn((key, value) => { store[key] = value; }),
+      deleteProperty: jest.fn((key) => { delete store[key]; })
+    };
   })
 };
 
