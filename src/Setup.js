@@ -88,15 +88,8 @@ function setHeaders(sheet, headers) {
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
 }
 
-/**
- * Step 1: Edit YOUR_SHEET_ID below, then run this function once from the editor.
- * Get the ID from your Sheet URL: docs.google.com/spreadsheets/d/YOUR_ID_HERE/edit
- */
 function configureBot() {
-  var SHEET_ID = '1B-pmYDAjfojW7q8kUhY3IA1lLCWAPgAFTfp48xvnPpE'; // ← paste your Sheet ID here
-  if (SHEET_ID === 'YOUR_SHEET_ID') {
-    throw new Error('Please replace YOUR_SHEET_ID in configureBot() before running.');
-  }
+  var SHEET_ID = '1B-pmYDAjfojW7q8kUhY3IA1lLCWAPgAFTfp48xvnPpE';
   PropertiesService.getScriptProperties().setProperty('SPREADSHEET_ID', SHEET_ID);
   Logger.log('Spreadsheet ID saved: ' + SHEET_ID);
 }
