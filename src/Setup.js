@@ -185,3 +185,79 @@ function deleteWebhook() {
   );
   Logger.log(JSON.parse(response.getContentText()));
 }
+
+/**
+ * Run this from the Apps Script editor to verify the full setup.
+ * Check the Logs panel (View → Logs) for results.
+ */
+function sanityCheck() {
+  var ok = true;
+
+  // 1. Spreadsheet
+  try {
+    var ss = getSpreadsheet();
+    Logger.log('✅ Spreadsheet accessible: ' + ss.getName());
+  } catch (e) {
+    Logger.log('❌ Spreadsheet error: ' + e.message);
+    ok = false;
+  }
+
+  // 2. Config values
+  try {
+    var config = getConfig();
+
+    var token = config.telegramBotToken;
+    if (!token) {
+      Logger.log('❌ TelegramBotToken: EMPTY');
+      ok = false;
+    } else {
+      Logger.log('✅ TelegramBotToken: ' + token.substring(0, 8) + '...' + token.slice(-4));
+    }
+
+    var key = config.geminiApiKey;
+    if (!key) {
+      Logger.log('❌ GeminiAPIKey: EMPTY');
+      ok = false;
+    } else {
+      Logger.log('✅ GeminiAPIKey: ' + key.substring(0, 6) + '...' + key.slice(-4));
+    }
+
+    Logger.log('ℹ️  User1: ' + config.user1Name + ' (ID: "' + config.user1TelegramId + '")');
+    Logger.log('ℹ️  User2: ' + config.user2Name + ' (ID: "' + config.user2TelegramId + '")');
+  } catch (e) {
+    Logger.log('❌ Config read error: ' + e.message);
+    ok = false;
+  }
+
+  // 3. Webhook status
+  try {
+    var webhookRes = UrlFetchApp.fetch(
+      'https://api.telegram.org/bot' + config.telegramBotToken + '/getWebhookInfo',
+      { muteHttpExceptions: true }
+    );
+    var info = JSON.parse(webhookRes.getContentText());
+    if (!info.ok) {
+      Logger.log('❌ Telegram API error: ' + JSON.stringify(info));
+      ok = false;
+    } else {
+      var wh = info.result;
+      if (!wh.url) {
+        Logger.log('❌ Webhook URL: NOT SET');
+        ok = false;
+      } else {
+        Logger.log('✅ Webhook URL: ' + wh.url);
+      }
+      if (wh.last_error_message) {
+        Logger.log('⚠️  Last webhook error: ' + wh.last_error_message + ' (at ' + wh.last_error_date + ')');
+      }
+      if (wh.pending_update_count > 0) {
+        Logger.log('⚠️  Pending updates in queue: ' + wh.pending_update_count);
+      }
+    }
+  } catch (e) {
+    Logger.log('❌ Webhook check error: ' + e.message);
+    ok = false;
+  }
+
+  Logger.log(ok ? '✅ All checks passed.' : '❌ Some checks failed — see above.');
+}
