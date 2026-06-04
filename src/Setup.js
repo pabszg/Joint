@@ -177,6 +177,39 @@ function resetDeduplication() {
   Logger.log('Deduplication state reset. The next Telegram update will be processed.');
 }
 
+/**
+ * Run this when the bot is misbehaving: clears the pending update queue,
+ * re-registers the webhook, and resets the deduplication counter.
+ */
+function resetAll() {
+  // 1. Drop pending queue
+  var config = getConfig();
+  var deleteRes = UrlFetchApp.fetch(
+    'https://api.telegram.org/bot' + config.telegramBotToken + '/deleteWebhook?drop_pending_updates=true',
+    { method: 'post', muteHttpExceptions: true }
+  );
+  Logger.log('deleteWebhook: ' + deleteRes.getContentText());
+
+  // 2. Re-register webhook
+  var WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyXcikz6OnWishTySk8UosQJl59VKzgu2SKUnJVSyWraqdi78AHeLigf9a_Olk5mhtgZQ/exec';
+  var setRes = UrlFetchApp.fetch(
+    'https://api.telegram.org/bot' + config.telegramBotToken + '/setWebhook',
+    {
+      method: 'post',
+      contentType: 'application/json',
+      payload: JSON.stringify({ url: WEB_APP_URL }),
+      muteHttpExceptions: true
+    }
+  );
+  Logger.log('setWebhook: ' + setRes.getContentText());
+
+  // 3. Reset dedup counter
+  PropertiesService.getScriptProperties().deleteProperty(DEDUP_PROPERTY_KEY);
+  Logger.log('Deduplication counter reset.');
+
+  Logger.log('✅ Reset complete. Send a test message to the bot.');
+}
+
 function deleteWebhook() {
   var config = getConfig();
   var response = UrlFetchApp.fetch(
