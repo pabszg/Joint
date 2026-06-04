@@ -25,8 +25,14 @@ function getConfig() {
   };
 }
 
+var KNOWN_USERS = {
+  '6331277427': 'Pablo'
+  // TODO: add partner — '': 'Ana'
+};
+
 function getPersonName(telegramId, config) {
   var id = String(telegramId);
+  if (KNOWN_USERS[id]) return KNOWN_USERS[id];
   if (id === config.user1TelegramId) return config.user1Name;
   if (id === config.user2TelegramId) return config.user2Name;
   return 'Unknown';
