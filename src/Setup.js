@@ -248,7 +248,8 @@ function sanityCheck() {
         Logger.log('✅ Webhook URL: ' + wh.url);
       }
       if (wh.last_error_message) {
-        Logger.log('⚠️  Last webhook error: ' + wh.last_error_message + ' (at ' + wh.last_error_date + ')');
+        var errDate = wh.last_error_date ? new Date(wh.last_error_date * 1000).toISOString() : 'unknown';
+        Logger.log('⚠️  Last webhook error: ' + wh.last_error_message + ' (at ' + errDate + ')');
       }
       if (wh.pending_update_count > 0) {
         Logger.log('⚠️  Pending updates in queue: ' + wh.pending_update_count);
