@@ -65,3 +65,41 @@ test('isLowConfidence returns false at 0.7 or above', () => {
   expect(isLowConfidence(0.7)).toBe(false);
   expect(isLowConfidence(0.97)).toBe(false);
 });
+
+test('parseGeminiResponse skips thought part and reads actual JSON when thinking is included', () => {
+  const raw = JSON.stringify({
+    candidates: [{
+      content: { parts: [
+        { thought: true, text: 'Let me analyze this expense message...' },
+        { text: JSON.stringify({
+          merchant: 'Mercadona', amount: 30, currency: 'EUR',
+          date: '2026-06-03', category: 'Supermercado', notes: '',
+          confidence: 0.95, has_items: false, items: []
+        })}
+      ]}
+    }]
+  });
+  const parsed = parseGeminiResponse(raw);
+  expect(parsed.merchant).toBe('Mercadona');
+  expect(parsed.amount).toBe(30);
+});
+
+test('classifyExpense payload includes thinkingBudget 0 to disable slow thinking mode', () => {
+  const { classifyExpense } = require('../src/GeminiService');
+  let capturedPayload;
+  global.UrlFetchApp.fetch = jest.fn().mockImplementation((_url, opts) => {
+    capturedPayload = JSON.parse(opts.payload);
+    return {
+      getContentText: jest.fn().mockReturnValue(JSON.stringify({
+        candidates: [{ content: { parts: [{ text: JSON.stringify({
+          merchant: 'Mercadona', amount: 30, currency: 'EUR',
+          date: '2026-06-03', category: 'Supermercado', notes: '',
+          confidence: 0.95, has_items: false, items: []
+        })}] }}]
+      }))
+    };
+  });
+  classifyExpense('Mercadona 30€', ['Supermercado'], [], 'fake-key');
+  expect(capturedPayload.generationConfig.thinkingConfig).toBeDefined();
+  expect(capturedPayload.generationConfig.thinkingConfig.thinkingBudget).toBe(0);
+});

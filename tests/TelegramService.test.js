@@ -10,8 +10,8 @@ test('formatAmount shows currency code for non-EUR', () => {
 });
 
 test('getCategoryEmoji returns correct emoji', () => {
-  expect(getCategoryEmoji('Groceries')).toBe('🛒');
-  expect(getCategoryEmoji('Learning')).toBe('📚');
+  expect(getCategoryEmoji('Supermercado')).toBe('🛒');
+  expect(getCategoryEmoji('Formación')).toBe('📚');
   expect(getCategoryEmoji('Unknown')).toBe('📌');
 });
 
@@ -68,5 +68,29 @@ test('telegramPost logs error when Telegram API returns ok: false', () => {
   telegramPost('bad-token', 'sendMessage', { chat_id: 123, text: 'hi' });
   expect(global.Logger.log).toHaveBeenCalledWith(
     expect.stringContaining('Telegram API error [sendMessage]')
+  );
+});
+
+test('formatAmount handles null amount gracefully instead of showing NaN', () => {
+  expect(formatAmount(null, 'EUR')).toBe('€0.00');
+  expect(formatAmount(undefined, 'EUR')).toBe('€0.00');
+});
+
+test('formatExpenseConfirmation shows fallback for null merchant instead of showing "null"', () => {
+  const expense = { merchant: null, amount: null, currency: 'EUR', category: 'Otros', date: '2026-06-03', receiptUrl: '' };
+  const text = formatExpenseConfirmation(expense);
+  expect(text).not.toContain(': null');
+  expect(text).not.toContain('NaN');
+});
+
+test('telegramPost returns {ok: false} and logs when response body is not valid JSON', () => {
+  global.UrlFetchApp.fetch = jest.fn().mockReturnValue({
+    getContentText: jest.fn().mockReturnValue('<html>502 Bad Gateway</html>'),
+    getContent: jest.fn().mockReturnValue([])
+  });
+  const result = telegramPost('token', 'sendMessage', { chat_id: 123, text: 'hi' });
+  expect(result).toEqual({ ok: false });
+  expect(global.Logger.log).toHaveBeenCalledWith(
+    expect.stringContaining('Telegram API parse error [sendMessage]')
   );
 });

@@ -11,7 +11,13 @@ function telegramPost(token, method, payload) {
     payload: JSON.stringify(payload),
     muteHttpExceptions: true
   });
-  var result = JSON.parse(response.getContentText());
+  var result;
+  try {
+    result = JSON.parse(response.getContentText());
+  } catch (e) {
+    Logger.log('Telegram API parse error [' + method + ']: ' + response.getContentText().substring(0, 200));
+    return { ok: false };
+  }
   if (!result.ok) {
     Logger.log('Telegram API error [' + method + ']: ' + JSON.stringify(result));
   }
@@ -81,7 +87,7 @@ function downloadFile(token, filePath) {
 function formatExpenseConfirmation(expense) {
   return [
     '🧾 <b>Gasto detectado:</b>',
-    'Comercio: ' + expense.merchant,
+    'Comercio: ' + (expense.merchant || '(desconocido)'),
     'Importe: ' + formatAmount(expense.amount, expense.currency),
     'Categoría: ' + getCategoryEmoji(expense.category) + ' ' + expense.category,
     'Fecha: ' + expense.date,
@@ -91,15 +97,16 @@ function formatExpenseConfirmation(expense) {
 
 function formatAmount(amount, currency) {
   var symbol = currency === 'EUR' ? '€' : currency;
-  return symbol + parseFloat(amount).toFixed(2);
+  var value = parseFloat(amount);
+  return symbol + (isNaN(value) ? '0.00' : value.toFixed(2));
 }
 
 function getCategoryEmoji(category) {
   var emojis = {
-    'Rent': '🏠', 'Groceries': '🛒', 'Dining out': '🍽️', 'Delivery': '🛵',
-    'Transport': '🚗', 'Health': '💊', 'Clothing': '👗', 'Entertainment': '🎬',
-    'Subscriptions': '📱', 'Home & Cleaning': '🧹', 'Travel': '✈️',
-    'Learning': '📚', 'Savings': '💰', 'Other': '🔧', 'Fees & Banking': '🏦'
+    'Alquiler': '🏠', 'Supermercado': '🛒', 'Restaurantes': '🍽️', 'Delivery': '🛵',
+    'Transporte': '🚗', 'Salud': '💊', 'Ropa': '👗', 'Entretenimiento': '🎬',
+    'Suscripciones': '📱', 'Hogar y Limpieza': '🧹', 'Viajes': '✈️',
+    'Formación': '📚', 'Ahorros': '💰', 'Otros': '🔧', 'Comisiones y Banco': '🏦'
   };
   return emojis[category] || '📌';
 }

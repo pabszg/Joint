@@ -45,8 +45,9 @@ function parseGeminiResponse(responseText) {
   if (!result.candidates || result.candidates.length === 0) {
     throw new Error('Gemini returned no candidates. Response: ' + responseText.substring(0, 200));
   }
-  var content = result.candidates[0].content.parts[0].text;
-  var cleaned = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+  var parts = result.candidates[0].content.parts;
+  var responsePart = parts.find(function(p) { return !p.thought; }) || parts[parts.length - 1];
+  var cleaned = responsePart.text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
   return JSON.parse(cleaned);
 }
 
@@ -61,7 +62,10 @@ function classifyExpense(text, categories, corrections, apiKey) {
 
   var payload = {
     contents: [{ role: 'user', parts: [{ text: prompt + '\n\nUser message: ' + text }] }],
-    generationConfig: { responseMimeType: 'application/json' }
+    generationConfig: {
+      responseMimeType: 'application/json',
+      thinkingConfig: { thinkingBudget: 0 }
+    }
   };
 
   var response = UrlFetchApp.fetch(GEMINI_API_BASE + '?key=' + apiKey, {
@@ -88,7 +92,10 @@ function classifyReceipt(imageBase64, mimeType, categories, corrections, apiKey)
         { inlineData: { mimeType: mimeType || 'image/jpeg', data: imageBase64 } }
       ]
     }],
-    generationConfig: { responseMimeType: 'application/json' }
+    generationConfig: {
+      responseMimeType: 'application/json',
+      thinkingConfig: { thinkingBudget: 0 }
+    }
   };
 
   var response = UrlFetchApp.fetch(GEMINI_API_BASE + '?key=' + apiKey, {

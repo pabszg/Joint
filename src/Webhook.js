@@ -1,5 +1,7 @@
 // src/Webhook.js
 
+var DEDUP_PROPERTY_KEY = 'last_update_id';
+
 function doGet() {
   return ContentService.createTextOutput('Expense Tracker bot is running.');
 }
@@ -7,9 +9,11 @@ function doGet() {
 // Drops Telegram retry duplicates — returns true if this update_id was already handled.
 function isDuplicate(updateId) {
   var props = PropertiesService.getScriptProperties();
-  var last = parseInt(props.getProperty('last_update_id') || '0', 10);
+  var last = parseInt(props.getProperty(DEDUP_PROPERTY_KEY) || '0', 10);
+  // <= rejects any update at or below the highest processed ID. Telegram guarantees
+  // strictly-increasing update_ids, so anything at or below last is a retry.
   if (updateId <= last) return true;
-  props.setProperty('last_update_id', String(updateId));
+  props.setProperty(DEDUP_PROPERTY_KEY, String(updateId));
   return false;
 }
 
@@ -20,9 +24,20 @@ function doPost(e) {
   try {
     var update = JSON.parse(e.postData.contents);
 
-    // Drop Telegram retries immediately — stops the welcome-message loop
-    if (update.update_id && isDuplicate(update.update_id)) {
-      return ContentService.createTextOutput('OK');
+    // Serialize the dedup check with a lock so two concurrent executions
+    // (Telegram retries if the bot is slow) can't both pass the check.
+    // The lock covers only the atomic read-check-write in isDuplicate —
+    // it is released before any slow Gemini / Sheets calls.
+    if (update.update_id) {
+      var lock = LockService.getScriptLock();
+      lock.waitLock(10000);
+      try {
+        if (isDuplicate(update.update_id)) {
+          return ContentService.createTextOutput('OK');
+        }
+      } finally {
+        lock.releaseLock();
+      }
     }
 
     // Capture chatId + token early so we can report errors to the user
@@ -280,7 +295,7 @@ if (typeof module !== 'undefined') {
   var _exports = {
     handleUpdate, handleTextExpense, handlePhotoExpense,
     handleCallbackQuery, handleStatus, handleConfirmCallback,
-    handleCancelCallback, isDuplicate
+    handleCancelCallback, isDuplicate, DEDUP_PROPERTY_KEY
   };
   // Assign to global so tests can call functions directly (mirrors Apps Script global scope)
   Object.keys(_exports).forEach(function(key) { global[key] = _exports[key]; });

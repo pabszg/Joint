@@ -7,9 +7,9 @@ const API_KEY = process.env.GEMINI_API_KEY;
 const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
 const CATEGORIES = [
-  'Rent', 'Groceries', 'Dining out', 'Delivery', 'Transport',
-  'Health', 'Clothing', 'Entertainment', 'Subscriptions',
-  'Home & Cleaning', 'Travel', 'Learning', 'Savings', 'Other', 'Fees & Banking'
+  'Alquiler', 'Supermercado', 'Restaurantes', 'Delivery', 'Transporte',
+  'Salud', 'Ropa', 'Entretenimiento', 'Suscripciones',
+  'Hogar y Limpieza', 'Viajes', 'Formación', 'Ahorros', 'Otros', 'Comisiones y Banco'
 ];
 
 function buildPrompt(userText) {
@@ -61,9 +61,9 @@ async function classifyExpense(text) {
   }
 
   const testCases = [
-    { input: 'Mercadona 47.30', expectCategory: 'Groceries', expectCurrency: 'EUR' },
-    { input: 'Uber Eats pizza 22€',   expectCategory: 'Delivery',   expectCurrency: 'EUR' },
-    { input: 'Netflix 15.99 EUR',     expectCategory: 'Subscriptions', expectCurrency: 'EUR' }
+    { input: 'Mercadona 47.30',    expectCategory: 'Supermercado',  expectCurrency: 'EUR' },
+    { input: 'Uber Eats pizza 22€', expectCategory: 'Delivery',     expectCurrency: 'EUR' },
+    { input: 'Netflix 15.99 EUR',  expectCategory: 'Suscripciones', expectCurrency: 'EUR' }
   ];
 
   let passed = 0;

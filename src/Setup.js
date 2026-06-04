@@ -28,39 +28,39 @@ var ITEMS_HEADERS = ['Expense ID', 'Item Name', 'Quantity', 'Unit Price', 'Categ
 var CONFIG_HEADERS = ['Key', 'Value'];
 
 var SEED_CATEGORIES = [
-  ['Rent', '🏠', true],
-  ['Groceries', '🛒', true],
-  ['Dining out', '🍽️', true],
+  ['Alquiler', '🏠', true],
+  ['Supermercado', '🛒', true],
+  ['Restaurantes', '🍽️', true],
   ['Delivery', '🛵', true],
-  ['Transport', '🚗', true],
-  ['Health', '💊', true],
-  ['Clothing', '👗', true],
-  ['Entertainment', '🎬', true],
-  ['Subscriptions', '📱', true],
-  ['Home & Cleaning', '🧹', true],
-  ['Travel', '✈️', true],
-  ['Learning', '📚', true],
-  ['Savings', '💰', true],
-  ['Other', '🔧', true],
-  ['Fees & Banking', '🏦', true]
+  ['Transporte', '🚗', true],
+  ['Salud', '💊', true],
+  ['Ropa', '👗', true],
+  ['Entretenimiento', '🎬', true],
+  ['Suscripciones', '📱', true],
+  ['Hogar y Limpieza', '🧹', true],
+  ['Viajes', '✈️', true],
+  ['Formación', '📚', true],
+  ['Ahorros', '💰', true],
+  ['Otros', '🔧', true],
+  ['Comisiones y Banco', '🏦', true]
 ];
 
 var SEED_BUDGETS = [
-  ['Rent', 900, 80],
-  ['Groceries', 300, 80],
-  ['Dining out', 150, 80],
+  ['Alquiler', 900, 80],
+  ['Supermercado', 300, 80],
+  ['Restaurantes', 150, 80],
   ['Delivery', 80, 80],
-  ['Transport', 100, 80],
-  ['Health', 100, 80],
-  ['Clothing', 100, 80],
-  ['Entertainment', 80, 80],
-  ['Subscriptions', 50, 80],
-  ['Home & Cleaning', 60, 80],
-  ['Travel', 200, 80],
-  ['Learning', 80, 80],
-  ['Savings', 200, 80],
-  ['Other', 50, 80],
-  ['Fees & Banking', 30, 80]
+  ['Transporte', 100, 80],
+  ['Salud', 100, 80],
+  ['Ropa', 100, 80],
+  ['Entretenimiento', 80, 80],
+  ['Suscripciones', 50, 80],
+  ['Hogar y Limpieza', 60, 80],
+  ['Viajes', 200, 80],
+  ['Formación', 80, 80],
+  ['Ahorros', 200, 80],
+  ['Otros', 50, 80],
+  ['Comisiones y Banco', 30, 80]
 ];
 
 var SEED_CONFIG = [
@@ -93,7 +93,7 @@ function setHeaders(sheet, headers) {
  * Get the ID from your Sheet URL: docs.google.com/spreadsheets/d/YOUR_ID_HERE/edit
  */
 function configureBot() {
-  var SHEET_ID = 'YOUR_SHEET_ID'; // ← paste your Sheet ID here
+  var SHEET_ID = '1B-pmYDAjfojW7q8kUhY3IA1lLCWAPgAFTfp48xvnPpE'; // ← paste your Sheet ID here
   if (SHEET_ID === 'YOUR_SHEET_ID') {
     throw new Error('Please replace YOUR_SHEET_ID in configureBot() before running.');
   }
@@ -183,7 +183,7 @@ function setWebhook() {
  * After resetting, Telegram may retry the last update — this is harmless but expected.
  */
 function resetDeduplication() {
-  PropertiesService.getScriptProperties().deleteProperty('last_update_id');
+  PropertiesService.getScriptProperties().deleteProperty(DEDUP_PROPERTY_KEY);
   Logger.log('Deduplication state reset. The next Telegram update will be processed.');
 }
 

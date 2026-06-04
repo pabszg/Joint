@@ -37,5 +37,5 @@ test('buildMonthlyReport shows under-budget celebration when total < budget', ()
 
 test('buildMonthlyReport shows over-budget warning when total > budget', () => {
   const text = buildMonthlyReport(expenses, budgets, 'May 2026', 200);
-  expect(text).toContain('presupuesto');
+  expect(text).toContain('Te pasaste');
 });
