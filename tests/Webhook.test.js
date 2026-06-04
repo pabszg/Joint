@@ -60,6 +60,18 @@ test('handleTextExpense calls classifyExpense and sendConfirmation', () => {
   expect(global.sendConfirmation).toHaveBeenCalled();
 });
 
+test('handleTextExpense sends a processing message before calling Gemini', () => {
+  loadWebhook();
+  const message = { chat: { id: 123 }, from: { id: 111 }, text: 'Mercadona 47.30' };
+  const callOrder = [];
+  global.sendMessage.mockImplementation(() => callOrder.push('sendMessage'));
+  global.classifyExpense.mockImplementation(() => { callOrder.push('classifyExpense'); return global.classifyExpense.mock.results[0]?.value ?? { merchant: 'Mercadona', amount: 47.30, currency: 'EUR', date: '2026-06-03', category: 'Groceries', notes: '', confidence: 0.97, has_items: false, items: [] }; });
+  handleTextExpense(message);
+  expect(callOrder[0]).toBe('sendMessage');
+  expect(callOrder[1]).toBe('classifyExpense');
+  expect(global.sendMessage).toHaveBeenCalledWith('test-token', 123, expect.stringContaining('⏳'));
+});
+
 test('handleConfirmCallback saves expense and clears state', () => {
   loadWebhook();
   global.getState.mockReturnValue({

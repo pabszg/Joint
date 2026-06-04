@@ -98,6 +98,9 @@ function handleTextExpense(message) {
   var config = getConfig();
   var chatId = message.chat.id;
   var token = config.telegramBotToken;
+
+  sendMessage(token, chatId, '⏳ Procesando…');
+
   var categories = getCategories();
   var corrections = getCorrections(20);
 
