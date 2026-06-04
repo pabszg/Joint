@@ -151,7 +151,14 @@ function handlePhotoExpense(message) {
 
   var categories = getCategories();
   var corrections = getCorrections(20);
-  var expense = classifyReceipt(base64, mimeType, categories, corrections, config.geminiApiKey);
+  var expense;
+  try {
+    expense = classifyReceipt(base64, mimeType, categories, corrections, config.geminiApiKey);
+  } catch (geminiErr) {
+    Logger.log('Gemini receipt error: ' + geminiErr.message);
+    sendMessage(token, chatId, '❌ No se pudo leer el recibo: ' + geminiErr.message);
+    return;
+  }
   expense.eurAmount = expense.amount;
   expense.person = getPersonName(message.from.id, config);
   expense.hasItems = expense.has_items || false;

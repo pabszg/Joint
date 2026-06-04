@@ -60,6 +60,31 @@ test('handleTextExpense calls classifyExpense and sendConfirmation', () => {
   expect(global.sendConfirmation).toHaveBeenCalled();
 });
 
+test('handleTextExpense sends friendly error message when Gemini throws', () => {
+  loadWebhook();
+  global.classifyExpense.mockImplementation(() => { throw new Error('quota exceeded'); });
+  const message = { chat: { id: 123 }, from: { id: 111 }, text: 'Mercadona 47.30' };
+  handleTextExpense(message);
+  expect(global.sendMessage).toHaveBeenCalledWith(
+    'test-token', 123, expect.stringContaining('❌')
+  );
+  expect(global.sendConfirmation).not.toHaveBeenCalled();
+});
+
+test('handlePhotoExpense sends friendly error message when Gemini throws', () => {
+  loadWebhook();
+  global.classifyReceipt.mockImplementation(() => { throw new Error('timeout'); });
+  const message = {
+    chat: { id: 123 }, from: { id: 111 },
+    photo: [{ file_id: 'abc', file_size: 100 }]
+  };
+  handlePhotoExpense(message);
+  expect(global.sendMessage).toHaveBeenCalledWith(
+    'test-token', 123, expect.stringContaining('❌')
+  );
+  expect(global.sendConfirmation).not.toHaveBeenCalled();
+});
+
 test('handleTextExpense sends a processing message before calling Gemini', () => {
   loadWebhook();
   const message = { chat: { id: 123 }, from: { id: 111 }, text: 'Mercadona 47.30' };
