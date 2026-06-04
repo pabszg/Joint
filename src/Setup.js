@@ -156,10 +156,7 @@ function setupSpreadsheet() {
  * Get the URL from: Deploy → Manage deployments → copy the Web app URL.
  */
 function setWebhook() {
-  var WEB_APP_URL = 'YOUR_WEBAPP_URL'; // ← paste your Web App URL here
-  if (WEB_APP_URL === 'YOUR_WEBAPP_URL') {
-    throw new Error('Paste your Web App URL into setWebhook() before running.');
-  }
+  var WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyXcikz6OnWishTySk8UosQJl59VKzgu2SKUnJVSyWraqdi78AHeLigf9a_Olk5mhtgZQ/exec';
 
   var config = getConfig();
   if (!config.telegramBotToken) {
