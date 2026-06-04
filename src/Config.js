@@ -26,8 +26,8 @@ function getConfig() {
 }
 
 var KNOWN_USERS = {
-  '6331277427': 'Pablo'
-  // TODO: add partner — '': 'Ana'
+  '6331277427': 'Pablo',
+  '8835381579': 'Valen'
 };
 
 function getPersonName(telegramId, config) {
